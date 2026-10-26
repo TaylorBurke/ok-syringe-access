@@ -198,12 +198,6 @@ table.causes td:first-child { font-weight: 600; width: 19%; }
 .key.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
 .key.swatch { display: inline-block; width: 14px; height: 14px; border-radius: 4px; }
 .key.swatch.ring { box-shadow: inset 0 0 0 2px var(--ink); }
-.tile-g { cursor: default; }
-.tile-g:focus { outline: none; }
-.tile-g:focus-visible rect:first-child { stroke: var(--s1); stroke-width: 3; }
-.tile-abbr { font-weight: 750; letter-spacing: -0.02em; }
-.tile-main { font-size: 13px; font-weight: 650; }
-.tile-sub { font-size: 12px; opacity: .9; }
 
 /* forest plot: HTML rows, one SVG strip per estimate on a shared log scale */
 .forest { display: grid; gap: 0; }
@@ -261,3 +255,14 @@ footer code { font-size: 13px; }
 .forest-dir { position: relative; height: 18px; display: block; padding: 0; }
 .forest-dir span { position: absolute; top: 0; white-space: nowrap; }
 #fig-map .chart svg { margin: 0 auto; }
+.ctx { fill: var(--surface); stroke: var(--grid); stroke-width: 1; }
+.state { stroke: var(--surface); stroke-width: 2; stroke-linejoin: round; transition: filter .15s; }
+.state.ring { stroke: var(--ink); stroke-width: 3; }
+.state-g { cursor: default; outline: none; }
+.state-g:hover .state, .state-g:focus-visible .state { filter: brightness(1.08); }
+.state-g:focus-visible .state { stroke: var(--s1); stroke-width: 3; }
+.state-label { font-family: var(--sans); }
+.state-abbr { font-size: 20px; font-weight: 750; letter-spacing: -0.01em; }
+.state-main { font-size: 12.5px; font-weight: 650; }
+.state-sub { font-size: 12px; }
+@media (max-width: 560px) { .state-abbr { font-size: 15px; } .state-main, .state-sub { font-size: 10.5px; } }

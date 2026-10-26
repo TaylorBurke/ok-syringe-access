@@ -403,8 +403,8 @@
     simpleTable(host, ["Estimate", "Risk ratio", "95% interval", "Source"], spec.rows.map((r) => [r.group + ": " + r.label, r.rr.toFixed(2), `${r.lo.toFixed(2)} to ${r.hi.toFixed(2)}`, r.note]));
   }
 
-  /* ---------- tile map: one tile per state in rough geographic position, ordinal fill ---------- */
-  function tilemap(host, spec) {
+  /* ---------- state map: real state outlines (us-atlas, pre-projected Albers), focus states filled, the rest as context ---------- */
+  function statemap(host, spec) {
     const { wrap, svg, tip } = mount(host, { label: spec.label });
     svg.removeAttribute("tabindex");
     const ul = document.createElement("ul");
@@ -418,36 +418,48 @@
       ul.appendChild(li);
     });
     wrap.insertBefore(ul, svg);
-    const cols = d3.max(spec.tiles, (t) => t.col) + 1, rows = d3.max(spec.tiles, (t) => t.row) + 1;
-    const W = Math.min(Math.max(300, host.clientWidth), 520), gap = 6;
-    const s = Math.floor((W - gap * (cols - 1)) / cols), H = rows * s + (rows - 1) * gap;
+    const all = topojson.feature(spec.topo, spec.topo.objects.states).features;
+    const byName = new Map(spec.states.map((st) => [st.name, st]));
+    const focus = { type: "FeatureCollection", features: all.filter((f) => byName.has(f.properties.name)) };
+    // The atlas is already projected, so an identity transform just scales it to fit the focus states.
+    const [[bx0, by0], [bx1, by1]] = d3.geoPath().bounds(focus);
+    const W = Math.min(Math.max(300, host.clientWidth), 720), narrow = W < 560, pad = narrow ? 6 : 14;
+    const H = Math.round((W - 2 * pad) * (by1 - by0) / (bx1 - bx0) + 2 * pad);
+    const proj = d3.geoIdentity().fitExtent([[pad, pad], [W - pad, H - pad]], focus);
+    const path = d3.geoPath(proj);
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("width", W); svg.setAttribute("height", H);
     svg.style.maxWidth = W + "px";
     const g = d3.select(svg);
-    spec.tiles.forEach((t) => {
-      const cls = spec.classes.find((c) => c.id === t.status);
-      const fill = css(cls.color), x0 = t.col * (s + gap), y0 = t.row * (s + gap);
-      const tg = g.append("g").attr("class", "tile-g").attr("tabindex", 0).attr("role", "img")
-        .attr("aria-label", `${t.name}: ${cls.name}. ${t.tip.join(". ")}`);
-      tg.append("rect").attr("x", x0).attr("y", y0).attr("width", s).attr("height", s).attr("rx", 10).attr("fill", fill);
-      if (cls.ring) tg.append("rect").attr("x", x0 + 1.5).attr("y", y0 + 1.5).attr("width", s - 3).attr("height", s - 3).attr("rx", 9)
-        .attr("fill", "none").attr("stroke", css("--ink")).attr("stroke-width", 3);
-      const ink = inkOn(fill), big = Math.max(18, s * 0.2);
-      tg.append("text").attr("x", x0 + 12).attr("y", y0 + 10 + big).attr("fill", ink).attr("class", "tile-abbr").style("font-size", big + "px").text(t.abbr);
-      // Small tiles (phones) take the short wording and smaller type; both lines always show.
-      const small = s < 150, fs = small ? 11 : 13, lh = fs + 4;
-      const lines = small ? t.linesShort : t.lines;
-      lines.forEach((ln, i) => tg.append("text").attr("x", x0 + (small ? 9 : 12)).attr("y", y0 + s - (small ? 10 : 14) - (lines.length - 1 - i) * lh).attr("fill", ink)
-        .attr("class", i ? "tile-sub" : "tile-main").style("font-size", (i ? fs - 1 : fs) + "px").text(ln));
+    const clip = "statemap-clip-" + (spec.id || "m");
+    g.append("clipPath").attr("id", clip).append("rect").attr("width", W).attr("height", H);
+    const root = g.append("g").attr("clip-path", `url(#${clip})`);
+    // context: every other state, quiet, so the region sits in its real surroundings
+    // (Alaska and Hawaii are insets in the Albers atlas, so they would land in the corner of any regional frame.)
+    const INSETS = new Set(["Alaska", "Hawaii"]);
+    root.selectAll("path.ctx").data(all.filter((f) => !byName.has(f.properties.name) && !INSETS.has(f.properties.name))).join("path").attr("class", "ctx").attr("d", path);
+    const fillOf = (st) => css(spec.classes.find((c) => c.id === st.status).color);
+    const order = focus.features.slice().sort((a, b) => (byName.get(a.properties.name).status === "expired") - (byName.get(b.properties.name).status === "expired"));
+    order.forEach((f) => {
+      const st = byName.get(f.properties.name), cls = spec.classes.find((c) => c.id === st.status), fill = fillOf(st);
+      const sg = root.append("g").attr("class", "state-g").attr("tabindex", 0).attr("role", "img").attr("aria-label", `${st.name}: ${cls.name}. ${st.tip.join(". ")}`);
+      sg.append("path").attr("d", path(f)).attr("fill", fill).attr("class", "state" + (cls.ring ? " ring" : ""));
       const show = (e) => {
-        const r0 = wrap.getBoundingClientRect();
-        const px = e && e.clientX ? e.clientX - r0.left : x0 + s / 2, py = e && e.clientY ? e.clientY - r0.top : y0 + s / 2;
-        tooltip(tip, wrap, px, py, t.name, t.tip.map((v) => ({ value: v, name: "" })));
+        const r0 = wrap.getBoundingClientRect(), [cx, cy] = path.centroid(f);
+        const k = r0.width / W;   // svg is scaled to the figure width
+        tooltip(tip, wrap, e && e.clientX ? e.clientX - r0.left : cx * k, e && e.clientY ? e.clientY - r0.top : cy * k, st.name, st.tip.map((v) => ({ value: v, name: "" })));
       };
-      tg.on("pointermove pointerenter", show).on("pointerleave", () => { tip.hidden = true; })
-        .on("focus", function () { show(); }).on("blur", () => { tip.hidden = true; });
+      sg.on("pointermove pointerenter", show).on("pointerleave", () => { tip.hidden = true; }).on("focus", () => show()).on("blur", () => { tip.hidden = true; });
     });
-    simpleTable(host, spec.tableCols, spec.tiles.map((t) => t.cells));
+    // labels last, so no outline crosses them; anchor at the centroid, nudged where a state's shape needs it
+    focus.features.forEach((f) => {
+      const st = byName.get(f.properties.name), [cx, cy] = path.centroid(f), ink = inkOn(fillOf(st));
+      const k = W / 720, x = cx + (st.dx || 0) * k, y = cy + (st.dy || 0) * k;
+      const lines = narrow ? st.linesShort : st.lines;
+      const t = g.append("text").attr("class", "state-label").attr("text-anchor", "middle").attr("fill", ink).attr("pointer-events", "none");
+      t.append("tspan").attr("x", x).attr("y", y - (lines.length * 15) / 2 + 4).attr("class", "state-abbr").text(st.abbr);
+      lines.forEach((ln, i) => t.append("tspan").attr("x", x).attr("dy", i ? 14 : 17).attr("class", i ? "state-sub" : "state-main").text(ln));
+    });
+    simpleTable(host, spec.tableCols, spec.states.map((st) => st.cells));
   }
 
   /* ---------- table view (the accessible twin) ---------- */
@@ -480,5 +492,5 @@
     host.appendChild(det);
   }
 
-  window.Charts = { line, hbars, dumbbell, forest, tilemap, fmtNum, fmtMonth };
+  window.Charts = { line, hbars, dumbbell, forest, statemap, fmtNum, fmtMonth };
 })();

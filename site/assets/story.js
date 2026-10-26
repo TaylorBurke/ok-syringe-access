@@ -57,11 +57,13 @@
 
     /* Chapter 5 */
     "fig-map": () => {
-      const POS = { CO: [0, 0], KS: [1, 0], MO: [2, 0], NM: [0, 1], OK: [1, 1], AR: [2, 1], TX: [1, 2] };
       const TINY = { legal: "Authorized", indirect: "Indirect", county_pilot: "Pilot only", none: "None", expired: "Expired" };
       const SHORTLAB = { legal: "Authorized", indirect: "Indirect only", county_pilot: "One-county pilot", none: "Not authorized", expired: "Expired July 1" };
-      Charts.tilemap(document.getElementById("fig-map"), {
-        label: "Tile map of Oklahoma and its six neighbors colored by whether state law authorizes syringe services programs",
+      // label nudges (px at 720 wide): Oklahoma's centroid sits west of its main body because of the panhandle; Texas's is fine
+      const NUDGE = { OK: [22, 4], MO: [8, 0], NM: [0, 6] };
+      const draw = (topo) => Charts.statemap(document.getElementById("fig-map"), {
+        id: "fig-map", topo,
+        label: "Map of Oklahoma and its six neighbors colored by whether state law authorizes syringe services programs",
         classes: [
           { id: "legal", name: "Authorized by statute", color: "--ord-3" },
           { id: "indirect", name: "Indirectly allowed", color: "--ord-2" },
@@ -69,18 +71,20 @@
           { id: "none", name: "Not authorized", color: "--none" },
           { id: "expired", name: "Expired July 1, 2026", color: "--none", ring: true },
         ],
-        tiles: S.legal.map((l) => {
-          const r = at(l.state, 2023);
+        states: S.legal.map((l) => {
+          const r = at(l.state, 2023), nd = NUDGE[l.abbr] || [0, 0];
           return {
-            abbr: l.abbr, name: l.state, status: l.status, col: POS[l.abbr][0], row: POS[l.abbr][1],
+            name: l.state, abbr: l.abbr, status: l.status, dx: nd[0], dy: nd[1],
             lines: [SHORTLAB[l.status], `HCV deaths ${two(r)}`],
-            linesShort: [TINY[l.status], `HCV ${two(r)}`],
+            linesShort: [TINY[l.status], two(r)],
             tip: [l.label, `Hepatitis C deaths 2023: ${two(r)} per 100,000`, l.statute, l.since ? `Since ${l.since.slice(0, 4)}` : ""].filter(Boolean),
             cells: [l.state, l.label, l.since ? l.since.slice(0, 4) : "—", l.statute, two(r)],
           };
         }),
         tableCols: ["State", "Legal status", "Since", "Statute", "HCV deaths per 100k, 2023"],
       });
+      // state outlines load once; re-renders (resize, theme) reuse them
+      (window.__statesTopo ||= fetch("assets/vendor/states-albers-10m.json").then((r) => r.json())).then(draw);
     },
 
     "fig-overdose": () => {

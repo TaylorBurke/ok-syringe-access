@@ -44,7 +44,7 @@ Rebuild: `python3 build_data.py && python3 verify_claims.py && python3 build_sit
 
 Raw downloads are git-ignored; each source folder has a `manifest.json` (url, sha256, fetch time). Python stdlib only (`xlsx.py` reads the CDC workbooks; `verify_claims.py` needs `pdftotext`). `www.cdc.gov` rejects requests without a contact URL in the User-Agent, so `fetch/common.py` sends one.
 
-Charts are hand-written SVG with D3 v7 vendored, built from the tech-hiring-gap kit: ranked bars, line, dumbbell, forest plot and tile map. Oklahoma is the one accent color in every chart; the rest is gray context. Palettes pass the dataviz skill's validator in light and dark (categorical and the ordinal legal-status ramp). Every chart has a table view and keyboard focus.
+Charts are hand-written SVG with D3 v7 vendored, built from the tech-hiring-gap kit: ranked bars, line, dumbbell, forest plot and a state map. The map uses vendored state outlines from us-atlas v3.0.1 (`states-albers-10m.json`, derived from Census cartographic boundaries, ISC license) decoded with topojson-client v3.1.0. Oklahoma is the one accent color in every chart; the rest is gray context. Palettes pass the dataviz skill's validator in light and dark (categorical and the ordinal legal-status ramp). Every chart has a table view and keyboard focus.
 
 ## Hosting
 `.github/workflows/pages.yml` publishes `site/` to GitHub Pages on every push to `main`.

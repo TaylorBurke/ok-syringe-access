@@ -208,6 +208,7 @@ page = f"""<!doctype html>
 <footer>Every chart links to its sources. Every quoted figure is checked against its source text by <code>verify_claims.py</code>. <a href="sources.html">The sources page</a> lists what each source measures, when it was retrieved, and where it falls short.</footer>
 </div>
 <script src="assets/vendor/d3.min.js"></script>
+<script src="assets/vendor/topojson-client.min.js"></script>
 <script>window.STORY = {blob};</script>
 <script src="assets/charts.js"></script>
 <script src="assets/ui.js"></script>
