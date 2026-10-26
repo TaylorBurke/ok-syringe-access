@@ -1,0 +1,84 @@
+# Source registry: the single place every data source is declared.
+# Each fetch script writes data tagged with one of these ids, each chart
+# cites ids, and build_sources.py renders the public sources page from this file.
+# Fields: name, publisher, url, license, measures, caveat, access ("api" | "csv" | "xlsx" | "pdf" | "manual" | "cite-only"), redistribute (bool)
+
+[cdc_hcv]
+name = "Viral Hepatitis Surveillance Report (2021 and 2023 editions)"
+publisher = "U.S. Centers for Disease Control and Prevention, National Notifiable Diseases Surveillance System and National Vital Statistics System"
+url = "https://www.cdc.gov/hepatitis-surveillance-2023/"
+license = "Public domain (U.S. government work)"
+measures = "Hepatitis C deaths by state 2017-2023 (Table 3.7), newly reported chronic hepatitis C by state (Table 3.5), acute hepatitis C by state (Table 3.1), risk exposures among acute cases (Table 3.3)"
+caveat = "Death rates are age-adjusted and count deaths with hepatitis C listed anywhere on the death certificate. Newly reported chronic cases depend on how much testing a state does, so a rise can mean more people were found, not more people infected. Acute cases are heavily under-reported and not comparable across states; we do not compare states on them. Texas does not report chronic hepatitis C."
+access = "xlsx"
+redistribute = true
+
+[cdc_vsrr]
+name = "Provisional drug overdose death counts (VSRR)"
+publisher = "CDC National Center for Health Statistics"
+url = "https://www.cdc.gov/nchs/nvss/vsrr/drug-overdose-data.htm"
+license = "Public domain (U.S. government work)"
+measures = "12-month-ending counts of drug overdose deaths by state of residence, monthly, 2015 to 2026"
+caveat = "Provisional and revised monthly; the latest months are flagged as underreported. We use CDC's predicted counts, which adjust for reporting delays (reported counts would exaggerate the recent decline), and compute rates with Census estimates."
+access = "api"
+redistribute = true
+
+[census_pep]
+name = "Population estimates, Vintage 2025"
+publisher = "U.S. Census Bureau"
+url = "https://www.census.gov/programs-surveys/popest.html"
+license = "Public domain (U.S. government work)"
+measures = "July 1 resident population by state, 2020-2025 (denominators for overdose rates)"
+caveat = "2026 rates use the 2025 estimate."
+access = "csv"
+redistribute = true
+
+[lappa]
+name = "Syringe Services Programs: Summary of State Laws (June 2026)"
+publisher = "Legislative Analysis and Public Policy Association, funded by the Office of National Drug Control Policy"
+url = "https://legislativeanalysis.org/wp-content/uploads/2026/06/Syringe-Services-Programs-Summary-of-State-Laws.pdf"
+license = "Copyright LAPPA; cited, statute citations quoted, PDF not redistributed"
+measures = "Whether each state authorizes syringe services programs, the statutes, effective dates and pending bills"
+caveat = "Research current as of May 2026, so it still lists Oklahoma as authorized; the July 1, 2026 sunset comes from the statute text it quotes and from news reporting."
+access = "pdf"
+redistribute = false
+
+[okwatch]
+name = "Oklahoma Watch: harm reduction law expires (June 30, 2026)"
+publisher = "Oklahoma Watch (Maya Henry); republished by Tulsa Flyer, July 4, 2026"
+url = "https://oklahomawatch.org/2026/06/30/more-people-sick-or-dying-after-five-years-of-sterile-syringe-distributions-harm-reduction-law-set-to-expire/"
+license = "News article; quoted and linked"
+measures = "OSDH estimate of syringes and people reached, HB 2012's path, the penalties after July 1, what programs plan next"
+caveat = "Figures attributed to organizations (overdoses prevented) are self-reported."
+access = "cite-only"
+redistribute = false
+
+[okhouse]
+name = "Oklahoma House interim study on harm reduction (October 2024)"
+publisher = "Oklahoma House of Representatives, Public Health Committee"
+url = "https://www.okhouse.gov/posts/news-20241011_2"
+license = "Public government press release; quoted and linked"
+measures = "Clients, syringes, naloxone kits, referrals and reported reversals from Oklahoma's four registered programs, 2022-2024"
+caveat = "Self-reported by the programs to the Healthy Minds Policy Initiative; not independently audited."
+access = "cite-only"
+redistribute = false
+
+[pubmed]
+name = "Peer-reviewed studies (PubMed records)"
+publisher = "National Library of Medicine; individual journals"
+url = "https://pubmed.ncbi.nlm.nih.gov/"
+license = "Abstracts quoted for citation; full texts belong to their publishers"
+measures = "Effect estimates for HIV and hepatitis C, drug treatment entry, crime, and the Scott County, Indiana and Kanawha County, West Virginia outbreaks"
+caveat = "Almost all of this evidence is observational. Each claim on the site states the study design and confidence interval, and the hepatitis C evidence for syringe programs alone is rated weak by Cochrane."
+access = "api"
+redistribute = false
+
+[mmwr_kanawha]
+name = "MMWR: HIV outbreak among people who inject drugs, Kanawha County, WV, 2019-2021"
+publisher = "CDC, Morbidity and Mortality Weekly Report 71(2), January 14, 2022"
+url = "https://www.cdc.gov/mmwr/volumes/71/wr/mm7102a4.htm"
+license = "Public domain (U.S. government work)"
+measures = "Outbreak case count, SSP suspension dates, reported syringe sharing after closures"
+caveat = "A field report, not a causal study; CDC describes the closures as context, alongside the COVID-19 pandemic."
+access = "cite-only"
+redistribute = true
