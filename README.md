@@ -48,3 +48,9 @@ Charts are hand-written SVG with D3 v7 vendored, built from the tech-hiring-gap 
 
 ## Hosting
 `.github/workflows/pages.yml` publishes `site/` to GitHub Pages on every push to `main`.
+
+## License
+- **Code** (the Python pipeline and `site/assets/*.js`): MIT, see `LICENSE`.
+- **Text, charts and the data we derived** (`data/derived/`, the numbers in `data/manual/`, the published site): [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Reuse them freely, including in news stories and advocacy, with credit to this project and a link.
+- **Quotes stay with their owners.** The `quote` column in `data/manual/claims.csv` quotes LAPPA, Oklahoma Watch, the Oklahoma House and journal abstracts for verification; those words are not covered by the licenses above. CDC and Census data are public domain. Each source's terms are listed in `sources.toml`.
+- **Vendored libraries** in `site/assets/vendor/` keep their own licenses: D3 and topojson-client (ISC), us-atlas state outlines (ISC).
